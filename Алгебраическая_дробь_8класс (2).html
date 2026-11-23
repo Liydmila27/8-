@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Алгебраическая дробь: теория и разбор задач — 8 класс</title>
+<style>
+:root{
+  --paper:#fdfcf4; --card:#ffffff; --ink:#22303f; --muted:#5a6b7d;
+  --accent:#d64545; --blue:#2b6cb0; --grid:#b9d7f2;
+  --ok:#2f9e63; --bad:#d64545; --hintbg:#2c3444; --hintfg:#fdfcf4;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Segoe UI", Verdana, Tahoma, sans-serif;
+  color:var(--ink); background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:28px 28px;
+  line-height:1.6; padding:16px 10px 60px;
+}
+body::before{
+  content:""; position:fixed; left:56px; top:0; bottom:0; width:2px;
+  background:rgba(214,69,69,.30); pointer-events:none; z-index:0;
+}
+.wrap{max-width:940px; margin:0 auto; position:relative; z-index:1}
+
+/* ---------- header ---------- */
+.header{
+  background:var(--card); border-radius:16px; padding:34px 30px 26px; margin:24px 0 30px;
+  box-shadow:0 8px 24px rgba(34,48,63,.10); position:relative; text-align:center;
+  overflow:visible;
+}
+.tape{
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%) rotate(-2deg);
+  background:#ffe08a; color:#7a5b12; font-size:13px; font-weight:700; letter-spacing:1px;
+  padding:5px 22px; border-radius:4px; box-shadow:0 3px 8px rgba(0,0,0,.15);
+  white-space:nowrap; max-width:92%;
+}
+.kicker{color:var(--blue); font-weight:700; letter-spacing:2px; font-size:13px; margin-top:14px}
+h1{font-size:clamp(26px,5vw,42px); line-height:1.2; margin:8px 0 12px}
+.lead{color:var(--muted); max-width:640px; margin:0 auto 12px; font-size:16px}
+.credits{font-size:13px; color:#8a97a5}
+.sticker{
+  position:absolute; font-size:34px; filter:drop-shadow(0 3px 4px rgba(0,0,0,.18));
+  user-select:none; pointer-events:none;
+}
+.sticker.tl{top:-16px; left:18px; transform:rotate(-12deg)}
+.sticker.tr{top:-18px; right:22px; transform:rotate(10deg)}
+.sticker.br{bottom:-14px; right:26px; transform:rotate(-8deg)}
+
+/* ---------- nav ---------- */
+.nav{
+  position:sticky; top:8px; z-index:50; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
+  background:rgba(255,255,255,.94); backdrop-filter:blur(6px);
+  border-radius:12px; padding:10px 12px; margin:0 auto 26px;
+  box-shadow:0 4px 14px rgba(34,48,63,.12); max-width:940px;
+}
+.nav a{
+  text-decoration:none; color:var(--blue); font-weight:600; font-size:14px;
+  padding:5px 12px; border-radius:999px; border:1.5px solid transparent; white-space:nowrap;
+}
+.nav a:hover{border-color:var(--blue); background:#eaf3fc}
+
+/* ---------- sections & cards ---------- */
+section{margin:34px 0}
+h2{
+  font-size:clamp(22px,3.6vw,30px); margin-bottom:16px; display:flex; align-items:center; gap:10px;
+}
+h2::after{content:""; flex:1; height:2px; background:repeating-linear-gradient(90deg,var(--blue) 0 10px,transparent 10px 18px); opacity:.35; border-radius:2px}
+h3{font-size:19px; margin:18px 0 8px; color:var(--blue)}
+.card{
+  background:var(--card); border-radius:14px; padding:24px 26px; margin:18px 0;
+  box-shadow:0 6px 18px rgba(34,48,63,.08); position:relative;
+}
+p{margin:10px 0}
+ul,ol{margin:8px 0 8px 22px}
+li{margin:6px 0}
+.note{
+  background:#fff8e6; border-left:4px solid #f0b429; border-radius:0 10px 10px 0;
+  padding:12px 16px; margin:14px 0; font-size:15px;
+}
+.warn{
+  background:#fdeeee; border-left:4px solid var(--accent); border-radius:0 10px 10px 0;
+  padding:12px 16px; margin:14px 0; font-size:15px;
+}
+.tip{
+  background:#eaf6ef; border-left:4px solid var(--ok); border-radius:0 10px 10px 0;
+  padding:12px 16px; margin:14px 0; font-size:15px;
+}
+.formula{
+  font-family:"Cambria Math","Times New Roman",serif; font-size:1.12em;
+  background:#f4f8fd; border:1px dashed #9dc2e8; border-radius:10px;
+  padding:10px 14px; display:inline-block; margin:8px 0;
+}
+
+/* ---------- fractions ---------- */
+.frac{display:inline-block; vertical-align:middle; text-align:center; margin:0 4px}
+.frac .num{display:block; padding:0 6px 1px; border-bottom:1.6px solid currentColor}
+.frac .den{display:block; padding:1px 6px 0}
+
+/* ---------- clickable hints ---------- */
+.hl{
+  border-bottom:2px dashed var(--blue); cursor:pointer; border-radius:4px;
+  padding:0 2px; transition:background .15s; white-space:nowrap;
+}
+.hl:hover, .hl.active{background:#eaf3fc}
+#hintbox{
+  position:absolute; z-index:100; max-width:320px; background:var(--hintbg); color:var(--hintfg);
+  padding:12px 15px; border-radius:10px; font-size:14px; line-height:1.5;
+  box-shadow:0 10px 26px rgba(0,0,0,.3); display:none;
+}
+#hintbox::after{
+  content:""; position:absolute; left:var(--ax,18px); bottom:-7px; width:14px; height:14px;
+  background:var(--hintbg); transform:rotate(45deg); border-radius:2px;
+}
+#hintsheet{
+  position:fixed; left:0; right:0; bottom:0; z-index:100; display:none;
+  background:var(--hintbg); color:var(--hintfg); padding:16px 18px 20px;
+  border-radius:16px 16px 0 0; box-shadow:0 -8px 30px rgba(0,0,0,.35);
+}
+#hintsheet .close, #hintbox .close{
+  position:absolute; top:6px; right:10px; cursor:pointer; font-size:18px; color:#9fb0c4;
+}
+
+/* ---------- steps ---------- */
+.step{display:none; margin:12px 0; padding:12px 16px; border-left:4px solid var(--blue); background:#f6f9fd; border-radius:0 10px 10px 0}
+.step.shown{display:block; animation:pop .25s ease}
+@keyframes pop{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+.answer{display:none; margin-top:10px; background:#eaf6ef; border-left:4px solid var(--ok); padding:12px 16px; border-radius:0 10px 10px 0; font-weight:600}
+.answer.shown{display:block; animation:pop .25s ease}
+.btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
+button{
+  font:inherit; font-weight:700; cursor:pointer; border:none; border-radius:999px;
+  padding:10px 20px; transition:transform .1s, box-shadow .1s;
+}
+button:active{transform:scale(.97)}
+.btn-next{background:var(--blue); color:#fff; box-shadow:0 4px 10px rgba(43,108,176,.35)}
+.btn-all{background:#fff; color:var(--blue); border:2px solid var(--blue)}
+button:disabled{opacity:.45; cursor:default; box-shadow:none}
+
+/* ---------- tasks ---------- */
+.task-head{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px}
+.badge{
+  background:var(--accent); color:#fff; font-weight:700; font-size:13px;
+  padding:4px 12px; border-radius:999px; letter-spacing:.5px;
+}
+.task-name{font-size:17px; font-weight:700}
+.cond{color:var(--muted); font-size:15px; margin-bottom:6px}
+
+/* ---------- details ---------- */
+details{background:#f6f9fd; border:1.5px solid #cfe0f0; border-radius:12px; padding:14px 18px; margin:12px 0; cursor:pointer}
+details[open]{background:#fff}
+summary{font-weight:700; cursor:pointer; list-style:none; outline:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸ "; color:var(--blue)}
+details[open] summary::before{content:"▾ "}
+
+/* ---------- quiz ---------- */
+.q{background:var(--card); border-radius:12px; padding:18px 20px; margin:14px 0; box-shadow:0 4px 12px rgba(34,48,63,.07)}
+.q .qq{font-weight:700; margin-bottom:10px}
+.q .opt{
+  display:block; padding:10px 14px; margin:7px 0; border:1.5px solid #cfe0f0; border-radius:10px;
+  cursor:pointer; transition:.15s; font-size:15px; user-select:none;
+}
+.q .opt:hover{border-color:var(--blue); background:#f4f8fd}
+.q.done .opt{cursor:default; pointer-events:none}
+.q .opt.correct{border-color:var(--ok); background:#eaf6ef; font-weight:700}
+.q .opt.wrong{border-color:var(--bad); background:#fdeeee}
+.q .expl{display:none; margin-top:8px; font-size:14px; color:var(--muted); border-top:1px dashed #cfe0f0; padding-top:8px}
+.q.done .expl{display:block}
+#quizresult{
+  display:none; text-align:center; background:#fff8e6; border-radius:12px;
+  padding:18px; font-size:18px; font-weight:700; margin-top:16px;
+}
+#quizreset{margin-top:12px; background:var(--blue); color:#fff}
+
+/* ---------- video ---------- */
+.videobox{position:relative; width:100%; aspect-ratio:16/9; border-radius:14px; overflow:hidden; box-shadow:0 8px 22px rgba(34,48,63,.18); background:#000}
+.videobox iframe{position:absolute; inset:0; width:100%; height:100%; border:none}
+
+footer{text-align:center; color:#8a97a5; font-size:13px; margin-top:40px; padding:0 10px}
+footer a{color:var(--blue)}
+
+@media (max-width:640px){
+  body{background-size:22px 22px; padding:10px 6px 50px}
+  body::before{left:16px; width:1.5px}
+  .card{padding:18px 16px; border-radius:12px}
+  .header{padding:30px 18px 22px}
+  .tape{font-size:11px; padding:4px 14px}
+  .sticker{font-size:26px}
+  .nav a{font-size:13px; padding:4px 10px}
+  .btnrow button{flex:1; min-width:140px}
+  .hl{white-space:normal}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= HEADER ================= -->
+<header class="header">
+  <div class="tape">ТЕТРАДЬ ПО АЛГЕБРЕ</div>
+  <span class="sticker tl">✏️</span>
+  <span class="sticker tr">📐</span>
+  <div class="kicker">МАТЕМАТИКА · 8 КЛАСС</div>
+  <h1>Алгебраическая дробь: теория и разбор задач</h1>
+  <p class="lead">Что такое алгебраическая дробь, как находить ОДЗ, сокращать дроби и не терять баллы на типичных ошибках.</p>
+  <div class="credits">Разработка: Чертолыс Л.А. · Материал и примеры: 100балльный репетитор</div>
+  <span class="sticker br">🌟</span>
+</header>
+
+<!-- ================= NAV ================= -->
+<nav class="nav">
+  <a href="#vstup">Вступление</a>
+  <a href="#teoriya">Теория</a>
+  <a href="#algoritm">Алгоритм</a>
+  <a href="#zadachi">Разбор задач</a>
+  <a href="#oshibki">Ошибки</a>
+  <a href="#samoproverka">Самопроверка</a>
+  <a href="#test">Тест</a>
+</nav>
+
+<!-- ================= ВСТУПЛЕНИЕ ================= -->
+<section id="vstup">
+  <h2>👋 Вступление</h2>
+  <div class="card">
+    <p>Алгебраические дроби изучают в 8 классе, а потом постоянно используют: при преобразовании выражений, решении уравнений и работе с ограничениями.</p>
+    <p>Трудности обычно возникают из-за букв в числителе и знаменателе, но правила остаются теми же, что и для обычных дробей.</p>
+    <div class="note">🌟 <b>Главное:</b> следить за знаменателем, находить область допустимых значений и сокращать только множители.</div>
+    <div class="tip">💡 <b>Подсказка:</b> в этой презентации части формул <span class="hl" data-hint="Кликни на любой фрагмент с пунктирным подчёркиванием — появится объяснение, откуда он взялся.">подчёркнуты пунктиром — нажми на меня</span> — и появится объяснение, откуда что взялось.</div>
+  </div>
+</section>
+
+<!-- ================= ТЕОРИЯ ================= -->
+<section id="teoriya">
+  <h2>📘 Основная теория</h2>
+
+  <div class="card">
+    <span class="sticker tr" style="font-size:28px">🧩</span>
+    <h3>Понятие алгебраической дроби</h3>
+    <p>Алгебраическая дробь — это выражение вида
+      <span class="formula frac"><span class="num"><span class="hl" data-hint="P — многочлен, его называют числителем дроби. Например: x² − 1.">P</span></span><span class="den"><span class="hl" data-hint="Q — многочлен в знаменателе. Он не может быть равен нулю!">Q</span></span></span>,
+      где <span class="hl" data-hint="P и Q — многочлены: выражения из чисел, переменных и их степеней, связанные сложением, вычитанием и умножением.">P и Q — многочлены</span> и
+      <span class="hl" data-hint="Знаменатель Q ≠ 0 — главное условие. Делить на нуль нельзя, поэтому значения, при которых Q = 0, исключаются.">Q не равно нулю</span>.</p>
+    <p>Черта дроби означает деление. Многочлен <b>P</b> называют <b>числителем</b>, а <b>Q</b> — <b>знаменателем</b>.</p>
+    <p>Обычная дробь <span class="formula frac"><span class="num">3</span><span class="den">5</span></span> состоит только из чисел. Алгебраическая дробь содержит переменные, например
+      <span class="formula frac"><span class="num"><span class="hl" data-hint="Числитель x + 2 — сумма, а значит, пока это сумма, сокращать её нельзя.">x + 2</span></span><span class="den"><span class="hl" data-hint="Знаменатель x² − 1 раскладывается на множители: (x − 1)(x + 1) — это разность квадратов.">x² − 1</span></span></span>.</p>
+    <details>
+      <summary>❓ Почему знаменатель Q не равен нулю? <i>(нажми, чтобы открыть ответ)</i></summary>
+      <p>Дробь имеет смысл только при тех значениях переменных, при которых знаменатель не равен нулю. Делить на ноль в математике нельзя — поэтому такие значения мы исключаем из рассмотрения.</p>
+    </details>
+  </div>
+
+  <div class="card">
+    <span class="sticker tr" style="font-size:28px">🚧</span>
+    <h3>Ограничения и область допустимых значений (ОДЗ)</h3>
+    <p>В математике нельзя делить на нуль, поэтому знаменатель алгебраической дроби не может быть равен нулю.</p>
+    <ul>
+      <li>Значения переменных, при которых знаменатель не обращается в нуль, называют <b>допустимыми значениями</b>.</li>
+      <li>Все такие значения образуют <b>область допустимых значений</b>, или <b>ОДЗ</b>.</li>
+      <li>Чтобы найти ОДЗ: <span class="hl" data-hint="План простой: 1) знаменатель = 0; 2) решаем уравнение; 3) найденные корни исключаем из ответа.">приравнять знаменатель к нулю и исключить найденные значения</span> переменной.</li>
+    </ul>
+    <div class="note">🔍 <b>Пример:</b> для дроби <span class="formula frac"><span class="num">1</span><span class="den">x − 4</span></span> знаменатель равен нулю при <span class="hl" data-hint="x − 4 = 0, значит x = 4. Именно это значение запрещено: знаменатель обратится в нуль.">x = 4</span>. Значит, <span class="hl" data-hint="x = 4 нельзя подставлять в дробь, а все остальные значения — можно.">x = 4 подставлять нельзя</span>, а все остальные значения допустимы.</div>
+  </div>
+
+  <div class="card">
+    <span class="sticker tr" style="font-size:28px">⚖️</span>
+    <h3>Главное правило работы с дробями</h3>
+    <p>Если числитель и знаменатель алгебраической дроби <b>умножить или разделить на один и тот же многочлен, который не равен нулю</b>, получится дробь, равная исходной.</p>
+    <p>Это свойство позволяет сокращать дроби: найти <span class="hl" data-hint="Общий множитель — одинаковое выражение, которое входит и в числитель, и в знаменатель.">общий множитель</span> в числителе и знаменателе и разделить на него верх и низ.</p>
+    <div class="warn">⚠️ <b>Важно:</b> сокращать можно только <span class="hl" data-hint="Множитель — то, что перемножается: 5x(x − 2) состоит из множителей 5x и (x − 2).">множители</span>, то есть выражения, которые перемножаются. Слагаемые внутри суммы сокращать нельзя.</div>
+  </div>
+</section>
+
+<!-- ================= АЛГОРИТМ ================= -->
+<section id="algoritm">
+  <h2>🧭 Алгоритм решения заданий</h2>
+  <div class="card">
+    <p>Чтобы не путаться в преобразованиях, действуем по одному плану:</p>
+    <ol>
+      <li><b>Проверь знаменатель.</b> Выпиши знаменатель отдельно, приравняй его к нулю и реши уравнение. Найденные корни нужно исключить.</li>
+      <li><b>Разложи на множители.</b> Разложи числитель и знаменатель. Для этого можно вынести общий множитель за скобки или применить формулы сокращённого умножения.</li>
+      <li><b>Сократи общие множители.</b> Найди одинаковые множители в числителе и знаменателе и сократи их.</li>
+      <li><b>Запиши результат.</b> Укажи упрощённое выражение и <b>обязательно</b> укажи ограничения.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= РАЗБОР ЗАДАЧ ================= -->
+<section id="zadachi">
+  <h2>✍️ Разбор задач</h2>
+
+  <!-- Задача 1 -->
+  <div class="card" data-task="1">
+    <span class="sticker tr" style="font-size:28px">🔍</span>
+    <div class="task-head"><span class="badge">Задача 1</span><span class="task-name">Поиск допустимых значений</span>
+      <span class="formula frac"><span class="num">x − 3</span><span class="den">x² − 4</span></span>
+    </div>
+    <p class="cond"><b>Условие:</b> найди область допустимых значений дроби.</p>
+    <p class="cond"><b>Решение:</b> <i>(нажимай «Следующий шаг», чтобы открыть решение по шагам)</i></p>
+    <div class="step"><b>Шаг 1.</b> Нас интересует знаменатель: <span class="hl" data-hint="ОДЗ ищем только по знаменателю — числитель может быть любым, даже нулём.">x² − 4</span>.</div>
+    <div class="step"><b>Шаг 2.</b> Приравниваем его к нулю: <span class="hl" data-hint="Чтобы найти запрещённые значения x, решаем уравнение «знаменатель = 0».">x² − 4 = 0</span>.</div>
+    <div class="step"><b>Шаг 3.</b> Раскладываем левую часть по формуле разности квадратов: <span class="hl" data-hint="Разность квадратов: a² − b² = (a − b)(a + b). Здесь a = x, b = 2, поэтому x² − 4 = (x − 2)(x + 2).">(x − 2)(x + 2) = 0</span>.</div>
+    <div class="step"><b>Шаг 4.</b> Произведение равно нулю, если хотя бы один множитель равен нулю. Получаем: <span class="hl" data-hint="Первый множитель приравниваем к нулю: x − 2 = 0, значит x = 2.">x − 2 = 0, значит, x = 2</span>; <span class="hl" data-hint="Второй множитель: x + 2 = 0, значит x = −2.">x + 2 = 0, значит, x = −2</span>.</div>
+    <div class="step"><b>Шаг 5.</b> Эти значения обращают знаменатель в нуль, поэтому их нужно исключить.</div>
+    <div class="answer">Ответ: допустимы все числа, <span class="hl" data-hint="При x = 2 и x = −2 знаменатель x² − 4 равен нулю — дробь теряет смысл.">кроме 2 и −2</span>.</div>
+    <div class="btnrow">
+      <button class="btn-next">▶ Следующий шаг</button>
+      <button class="btn-all">Показать всё решение</button>
+    </div>
+  </div>
+
+  <!-- Задача 2 -->
+  <div class="card" data-task="2">
+    <span class="sticker tr" style="font-size:28px">🧮</span>
+    <div class="task-head"><span class="badge">Задача 2</span><span class="task-name">Применение формул для сокращения</span>
+      <span class="formula frac"><span class="num">4a² − 9</span><span class="den">2a + 3</span></span>
+    </div>
+    <p class="cond"><b>Условие:</b> сократи дробь.</p>
+    <p class="cond"><b>Решение:</b> <i>(открывается по шагам)</i></p>
+    <div class="step"><b>Шаг 1.</b> Сначала проверяем знаменатель: <span class="hl" data-hint="Перед любым сокращением — проверка знаменателя. Он не должен обращаться в нуль.">2a + 3 ≠ 0</span>.</div>
+    <div class="step"><b>Шаг 2.</b> Находим ограничение: 2a ≠ −3, значит, <span class="hl" data-hint="Разделили обе части неравенства 2a ≠ −3 на 2: a ≠ −3/2. Это ограничение войдёт в ответ.">a ≠ −3/2</span>.</div>
+    <div class="step"><b>Шаг 3.</b> Рассмотрим числитель <span class="hl" data-hint="4a² можно представить как (2a)², потому что (2a)² = 4a². Проверь: (2a)·(2a) = 4a².">4a² − 9</span>. Это разность квадратов, потому что <span class="hl" data-hint="4a² = (2a)² — «квадрат первого выражения».">4a² = (2a)²</span>, а <span class="hl" data-hint="9 = 3² — «квадрат второго выражения».">9 = 3²</span>.</div>
+    <div class="step"><b>Шаг 4.</b> Раскладываем числитель по формуле a² − b² = (a − b)(a + b): <span class="hl" data-hint="Подставляем в формулу a = 2a и b = 3: 4a² − 9 = (2a)² − 3² = (2a − 3)(2a + 3).">4a² − 9 = (2a − 3)(2a + 3)</span>.</div>
+    <div class="step"><b>Шаг 5.</b> Переписываем дробь: <span class="formula frac"><span class="num">(2a − 3)(2a + 3)</span><span class="den">2a + 3</span></span>.</div>
+    <div class="step"><b>Шаг 6.</b> Сокращаем <span class="hl" data-hint="Множитель (2a + 3) стоит и в числителе, и в знаменателе — это произведение, значит его можно сократить.">общий множитель (2a + 3)</span>.</div>
+    <div class="answer">Ответ: <span class="hl" data-hint="После сокращения остался множитель (2a − 3). Ограничение a ≠ −3/2 сохраняется — его нужно записать в ответе!">2a − 3, при a ≠ −3/2</span>.</div>
+    <div class="btnrow">
+      <button class="btn-next">▶ Следующий шаг</button>
+      <button class="btn-all">Показать всё решение</button>
+    </div>
+  </div>
+
+  <!-- Задача 3 -->
+  <div class="card" data-task="3">
+    <span class="sticker tr" style="font-size:28px">📦</span>
+    <div class="task-head"><span class="badge">Задача 3</span><span class="task-name">Вынесение общего множителя</span>
+      <span class="formula frac"><span class="num">5x² − 10x</span><span class="den">x − 2</span></span>
+    </div>
+    <p class="cond"><b>Условие:</b> упрости выражение.</p>
+    <p class="cond"><b>Решение:</b> <i>(открывается по шагам)</i></p>
+    <div class="step"><b>Шаг 1.</b> Проверяем знаменатель: <span class="hl" data-hint="x − 2 ≠ 0, значит x ≠ 2. Это ограничение не забываем в конце.">x − 2 ≠ 0, значит, x ≠ 2</span>.</div>
+    <div class="step"><b>Шаг 2.</b> Работаем с числителем <span class="hl" data-hint="5x² − 10x: оба слагаемых делятся на 5 (5 и 10) и оба содержат множитель x.">5x² − 10x</span>. Оба слагаемых делятся на 5 и содержат множитель x.</div>
+    <div class="step"><b>Шаг 3.</b> Выносим общий множитель <span class="hl" data-hint="НОД чисел 5 и 10 равен 5, а x входит в оба слагаемых. Значит, общий множитель — 5x. За скобками остаётся x − 2.">5x за скобки</span>: 5x² − 10x = 5x(x − 2).</div>
+    <div class="step"><b>Шаг 4.</b> Переписываем дробь: <span class="formula frac"><span class="num">5x(x − 2)</span><span class="den">x − 2</span></span>.</div>
+    <div class="step"><b>Шаг 5.</b> Сокращаем <span class="hl" data-hint="Скобка (x − 2) — множитель и сверху, и снизу. Смело сокращаем: сокращать множители можно!">общий множитель (x − 2)</span>.</div>
+    <div class="answer">Ответ: <span class="hl" data-hint="Осталась 5x. Ограничение x ≠ 2 обязательно пишем — без него ответ неполный.">5x, при x ≠ 2</span>.</div>
+    <div class="btnrow">
+      <button class="btn-next">▶ Следующий шаг</button>
+      <button class="btn-all">Показать всё решение</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ОШИБКИ ================= -->
+<section id="oshibki">
+  <h2>⛔ Типичные ошибки</h2>
+  <div class="card">
+    <span class="sticker tr" style="font-size:28px">🚨</span>
+    <p>Из-за этих ошибок чаще всего теряются баллы — проверяй себя!</p>
+  </div>
+
+  <div class="card">
+    <h3>❌ Ошибка 1. Сокращение слагаемых вместо множителей</h3>
+    <p>В дроби <span class="formula frac"><span class="num">x + 5</span><span class="den">x + 7</span></span> нельзя зачеркнуть x и получить <span class="hl" data-hint="Это самая коварная ошибка! x входит в СУММЫ x + 5 и x + 7, а слагаемые сокращать нельзя.">5/7</span>.</p>
+    <p>Здесь x входит в суммы x + 5 и x + 7, а сокращать можно только множители. Чтобы сокращение было возможным, выражение должно быть записано в виде <b>произведения</b>.</p>
+  </div>
+
+  <div class="card">
+    <h3>❌ Ошибка 2. Потеря ограничений после сокращения</h3>
+    <p>Иногда сначала сокращают дробь, а ограничения не записывают. Из-за этого можно получить неверный ответ. Например:</p>
+    <p><span class="formula frac"><span class="num">x² − 9</span><span class="den">x − 3</span></span> =
+       <span class="formula frac"><span class="num">(x − 3)(x + 3)</span><span class="den">x − 3</span></span> =
+       <span class="hl" data-hint="Формально получилось x + 3, но этого мало — ограничения потеряны!">x + 3</span>.</p>
+    <p>Но исходная дробь не существует при <span class="hl" data-hint="Знаменатель x − 3 = 0 при x = 3. Даже после сокращения это значение остаётся запрещённым.">x = 3</span>, поэтому правильная запись результата: <b>x + 3, при x ≠ 3</b>.</p>
+  </div>
+
+  <div class="card">
+    <h3>❌ Ошибка 3. Потеря знака</h3>
+    <p>При вынесении минуса за скобки знаки внутри скобок меняются. Например: 3 − y = −(y − 3), тогда</p>
+    <p><span class="formula frac"><span class="num">y − 3</span><span class="den">3 − y</span></span> =
+       <span class="formula frac"><span class="num">y − 3</span><span class="den"><span class="hl" data-hint="3 − y = −(y − 3): минус выносим за скобку, знаки внутри меняются.">−(y − 3)</span></span></span> = <span class="hl" data-hint="После сокращения (y − 3) остаётся минус перед единицей. Не потеряй знак!">−1</span>.</p>
+    <p>Если забыть поменять знаки, дальнейшее сокращение может стать неверным.</p>
+  </div>
+</section>
+
+<!-- ================= САМОПРОВЕРКА ================= -->
+<section id="samoproverka">
+  <h2>🎯 Самопроверка</h2>
+  <div class="card">
+    <span class="sticker tr" style="font-size:28px">🏆</span>
+    <p>Реши задания самостоятельно, используя алгоритм, а потом сверься с ответами <i>(нажми на задание, чтобы открыть решение)</i>.</p>
+  </div>
+
+  <details>
+    <summary>📝 Задание 1. Найди допустимые значения переменной y для дроби <span class="frac"><span class="num">7y</span><span class="den">y − 5</span></span></summary>
+    <p>Знаменатель y − 5 приравниваем к нулю: y − 5 = 0, значит, y = 5. Допустимы все числа, кроме 5.</p>
+    <p><b>Ответ: y ≠ 5.</b></p>
+  </details>
+
+  <details>
+    <summary>📝 Задание 2. Сократи дробь <span class="frac"><span class="num">x² − 25</span><span class="den">x − 5</span></span></summary>
+    <p>Числитель раскладывается по формуле разности квадратов: x² − 25 = (x − 5)(x + 5). Тогда дробь = (x − 5)(x + 5)/(x − 5). Сокращаем общий множитель (x − 5).</p>
+    <p><b>Ответ: x + 5, при x ≠ 5.</b></p>
+  </details>
+
+  <details>
+    <summary>📝 Задание 3. Упрости дробь <span class="frac"><span class="num">3x² − 12</span><span class="den">3x − 6</span></span></summary>
+    <p>В числителе выносим 3 за скобки: 3x² − 12 = 3(x² − 4). Затем раскладываем разность квадратов: 3(x − 2)(x + 2). В знаменателе тоже выносим 3: 3x − 6 = 3(x − 2). Получаем 3(x − 2)(x + 2) / 3(x − 2). Сокращаем общий множитель 3 и общий множитель (x − 2).</p>
+    <p><b>Ответ: x + 2, при x ≠ 2.</b></p>
+  </details>
+</section>
+
+<!-- ================= ТЕСТ ================= -->
+<section id="test">
+  <h2>🧠 Тест по теории</h2>
+  <div class="card">
+    <span class="sticker tr" style="font-size:28px">✅</span>
+    <p>Пять вопросов по теории. Выбирай ответ — сразу увидишь, верный ли он, и короткое пояснение. Объяснения кликабельных частей формул из разбора задач пригодятся!</p>
+    <div id="quiz"></div>
+    <div id="quizresult"></div>
+  </div>
+</section>
+
+<!-- ================= ЗАКЛЮЧЕНИЕ ================= -->
+<section id="zakl">
+  <h2>🏁 Заключение</h2>
+  <div class="card">
+    <span class="sticker tr" style="font-size:28px">🎉</span>
+    <p>Алгебраическая дробь подчиняется тем же правилам, что и обычная дробь, но вместо чисел в ней стоят многочлены.</p>
+    <p>Теперь ты умеешь: находить ограничения, записывать область допустимых значений, раскладывать выражения на множители и сокращать дроби без потери условий. Эти навыки помогают выполнять задания на преобразование выражений и избегать ошибок с делением на нуль.</p>
+    <div class="tip">📚 Чтобы закрепить тему, реши несколько заданий на дробно-рациональные выражения в «100балльном банке» на сайте 100балльного репетитора.</div>
+  </div>
+</section>
+
+<!-- ================= ВИДЕО ================= -->
+<section id="video">
+  <h2>📺 Остались вопросы?</h2>
+  <div class="card">
+    <span class="sticker tr" style="font-size:28px">🎬</span>
+    <p>Если что-то из теории или разбора задач осталось непонятным — рекомендую посмотреть это видео. В нём тему алгебраических дробей объясняют простыми словами и с примерами, как раз для 8 класса.</p>
+    <div class="videobox">
+      <iframe src="https://rutube.ru/play/embed/63812ef8ee97da3523ba5149032f4d8c/"
+              allow="clipboard-write; autoplay" allowFullScreen></iframe>
+    </div>
+    <p style="color:var(--muted); font-size:14px; margin-top:10px">👆 Нажми на плей — видео откроется прямо здесь. Прогулка по теме займёт несколько минут.</p>
+  </div>
+</section>
+
+<footer>
+  Презентация по материалам статьи «Алгебраическая дробь: теория и разбор задач для 8 класса» · <a href="https://100points.ru/wiki/math/algebraicheskaya-drob-base/" target="_blank" rel="noopener">100балльный репетитор</a>
+</footer>
+
+</div>
+
+<!-- tooltips -->
+<div id="hintbox"><span class="close">✕</span><span class="htext"></span></div>
+<div id="hintsheet"><span class="close">✕</span><div class="htext"></div></div>
+
+<script>
+/* ---------- кликабельные подсказки ---------- */
+const isMobile = () => window.innerWidth < 720;
+const box = document.getElementById('hintbox');
+const sheet = document.getElementById('hintsheet');
+let activeEl = null;
+
+function showHint(el){
+  if(activeEl) activeEl.classList.remove('active');
+  activeEl = el; el.classList.add('active');
+  const txt = el.dataset.hint;
+  if(isMobile()){
+    document.querySelector('#hintsheet .htext').textContent = txt;
+    sheet.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }else{
+    document.querySelector('#hintbox .htext').textContent = txt;
+    box.style.display = 'block';
+    const r = el.getBoundingClientRect();
+    box.style.left = Math.max(10, Math.min(r.left + window.scrollX, window.scrollX + window.innerWidth - 340)) + 'px';
+    let top = r.bottom + window.scrollY + 10;
+    if(r.bottom + 160 > window.innerHeight) top = r.top + window.scrollY - 150;
+    box.style.top = top + 'px';
+    box.style.setProperty('--ax', Math.min(24, Math.max(10, r.left + window.scrollX - parseFloat(box.style.left))) + 'px');
+  }
+}
+function hideHint(){
+  box.style.display = 'none'; sheet.style.display = 'none';
+  document.body.style.overflow = '';
+  if(activeEl){activeEl.classList.remove('active'); activeEl = null;}
+}
+document.addEventListener('click', e => {
+  const hl = e.target.closest('.hl');
+  if(hl){ showHint(hl); e.stopPropagation(); return; }
+  if(e.target.classList && e.target.classList.contains('close')){ hideHint(); return; }
+  if(!box.contains(e.target) && !sheet.contains(e.target)) hideHint();
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') hideHint(); });
+
+/* ---------- пошаговые решения ---------- */
+document.querySelectorAll('.card[data-task]').forEach(card => {
+  const steps = card.querySelectorAll('.step');
+  const ans = card.querySelector('.answer');
+  const btnNext = card.querySelector('.btn-next');
+  const btnAll = card.querySelector('.btn-all');
+  steps[0].classList.add('shown');
+  let idx = 0;
+  function reveal(){
+    if(idx < steps.length){ steps[idx].classList.add('shown'); idx++; }
+    if(idx >= steps.length){
+      ans.classList.add('shown');
+      btnNext.disabled = true; btnAll.disabled = true;
+      btnNext.textContent = '✔ Решение полностью раскрыто';
+    }
+  }
+  btnNext.addEventListener('click', reveal);
+  btnAll.addEventListener('click', () => {
+    steps.forEach(s => s.classList.add('shown'));
+    idx = steps.length; reveal();
+  });
+});
+
+/* ---------- тест по теории ---------- */
+const quiz = [
+  {
+    q: '1. Алгебраическая дробь — это…',
+    opts: [
+      'сумма двух многочленов',
+      'отношение двух многочленов P/Q, где Q ≠ 0',
+      'выражение, состоящее только из чисел',
+      'произведение двух многочленов'
+    ],
+    correct: 1,
+    exp: 'Верно! Алгебраическая дробь — это P/Q, где P и Q — многочлены, и знаменатель Q не равен нулю.'
+  },
+  {
+    q: '2. Что нельзя делать с алгебраической дробью?',
+    opts: [
+      'сокращать общие множители',
+      'выносить общий множитель за скобку',
+      'подставлять значение переменной, при котором знаменатель равен нулю',
+      'умножать числитель и знаменатель на одно и то же выражение'
+    ],
+    correct: 2,
+    exp: 'Верно! Делить на нуль нельзя, поэтому значения, при которых знаменатель Q = 0, всегда исключают.'
+  },
+  {
+    q: '3. Как найти область допустимых значений (ОДЗ)?',
+    opts: [
+      'приравнять числитель к нулю',
+      'приравнять знаменатель к нулю и исключить найденные корни',
+      'вычислить числитель при x = 0',
+      'раскрыть все скобки в дроби'
+    ],
+    correct: 1,
+    exp: 'Верно! ОДЗ ищем по знаменателю: решаем «знаменатель = 0» и исключаем полученные корни.'
+  },
+  {
+    q: '4. Что можно сокращать в алгебраической дроби?',
+    opts: [
+      'любые одинаковые слагаемые сверху и снизу',
+      'только множители — выражения, которые перемножаются',
+      'любые числа, если они одинаковые',
+      'первые скобки в числителе и знаменателе'
+    ],
+    correct: 1,
+    exp: 'Верно! Сокращать можно только множители. Слагаемые внутри суммы сокращать нельзя — это ошибка №1.'
+  },
+  {
+    q: '5. Дробь 1/(x − 4) не имеет смысла при…',
+    opts: ['x = 0', 'x = −4', 'x = 4', 'при всех x'],
+    correct: 2,
+    exp: 'Верно! Знаменатель x − 4 обращается в нуль при x = 4 — это единственное запрещённое значение.'
+  }
+];
+
+const quizRoot = document.getElementById('quiz');
+const resultBox = document.getElementById('quizresult');
+let answered = 0, score = 0;
+
+function renderQuiz(){
+  answered = 0; score = 0;
+  resultBox.style.display = 'none';
+  quizRoot.innerHTML = '';
+  quiz.forEach((item, qi) => {
+    const q = document.createElement('div');
+    q.className = 'q';
+    q.innerHTML = '<div class="qq">' + item.q + '</div>';
+    item.opts.forEach((opt, oi) => {
+      const o = document.createElement('div');
+      o.className = 'opt'; o.textContent = opt;
+      o.addEventListener('click', () => {
+        if(q.classList.contains('done')) return;
+        q.classList.add('done'); answered++;
+        const right = oi === item.correct;
+        if(right) score++;
+        o.classList.add(right ? 'correct' : 'wrong');
+        if(!right) q.querySelectorAll('.opt')[item.correct].classList.add('correct');
+        q.querySelector('.expl').textContent = item.exp;
+        if(answered === quiz.length){
+          let msg, emo;
+          if(score === 5){ msg = 'Идеально! 5 из 5 — теория освоена на отлично!'; emo = '🏆'; }
+          else if(score === 4){ msg = 'Отличный результат: ' + score + ' из 5. Почти безупречно!'; emo = '🌟'; }
+          else if(score === 3){ msg = 'Хорошо: ' + score + ' из 5. Загляни ещё раз в раздел с ошибками.'; emo = '👍'; }
+          else { msg = 'Результат: ' + score + ' из 5. Перечитай раздел «Основная теория» и попробуй снова!'; emo = '📚'; }
+          resultBox.innerHTML = emo + ' ' + msg;
+          resultBox.style.display = 'block';
+          const rs = document.createElement('button');
+          rs.id = 'quizreset'; rs.textContent = '↻ Пройти заново';
+          rs.addEventListener('click', renderQuiz);
+          resultBox.appendChild(document.createElement('br'));
+          resultBox.appendChild(rs);
+          resultBox.scrollIntoView({behavior:'smooth', block:'nearest'});
+        }
+      });
+      q.appendChild(o);
+    });
+    const ex = document.createElement('div');
+    ex.className = 'expl';
+    q.appendChild(ex);
+    quizRoot.appendChild(q);
+  });
+}
+renderQuiz();
+</script>
+</body>
+</html>

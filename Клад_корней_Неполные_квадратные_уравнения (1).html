@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Клад корней — Неполные квадратные уравнения</title>
+<style>
+  :root{
+    --fs: 22px;
+    --gold: #ffd76a;
+    --gold2: #c9a227;
+    --sand: #e8d5a3;
+    --dark: #2a1c10;
+    --panel: #3d2c1a;
+    --panel2: #4d3a22;
+    --good: #7ed957;
+    --bad: #ff5a5a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+    background: linear-gradient(180deg, #1b120a 0%, #33220f 30%, #4a3218 65%, #2a1c10 100%);
+    color: var(--sand);
+    overflow-x: hidden;
+    user-select: none;
+  }
+  /* ---------- фоновые частицы ---------- */
+  #dust-layer{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+  .dust{position:absolute;border-radius:50%;background:rgba(232,213,163,.25);animation:drift linear infinite;}
+  @keyframes drift{
+    0%{transform:translate(0,0) scale(1);opacity:.0;}
+    10%{opacity:.6;}
+    90%{opacity:.4;}
+    100%{transform:translate(var(--dx), var(--dy)) scale(.6);opacity:0;}
+  }
+  .sandgrain{position:absolute;width:4px;height:4px;border-radius:50%;
+    background:rgba(201,162,39,.55);top:-10px;animation:sandfall linear infinite;}
+  @keyframes sandfall{
+    0%{transform:translateY(-10px) rotate(0deg);}
+    100%{transform:translateY(110vh) rotate(360deg);}
+  }
+  /* ---------- общий каркас ---------- */
+  #app{position:relative;z-index:5;max-width:960px;margin:0 auto;padding:14px 14px 90px;min-height:100vh;display:flex;flex-direction:column;}
+  .topbar{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    background:rgba(42,28,16,.85);border:2px solid var(--gold2);border-radius:14px;
+    padding:8px 12px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,.45);
+  }
+  .topbar .title{font-weight:700;color:var(--gold);letter-spacing:.5px;}
+  .topbar .grow{flex:1;}
+  .iconbtn{
+    background:var(--panel2);border:2px solid var(--gold2);color:var(--gold);
+    border-radius:10px;padding:7px 12px;cursor:pointer;font-size:18px;line-height:1;
+    transition:transform .15s, background .15s; min-width:44px;min-height:40px;
+  }
+  .iconbtn:active{transform:scale(.92);}
+  .iconbtn:hover{background:#5d482b;}
+  /* ---------- статистика ---------- */
+  .stats{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;
+  }
+  .chip{
+    background:rgba(42,28,16,.85);border:1px solid var(--gold2);border-radius:12px;
+    padding:7px 14px;font-size:calc(var(--fs) - 5px);white-space:nowrap;
+  }
+  .chip b{color:var(--gold);}
+  /* ---------- прогресс-разрез ---------- */
+  #strata-wrap{
+    background:rgba(42,28,16,.8);border:2px solid var(--gold2);border-radius:14px;
+    padding:10px 12px;margin-bottom:14px;
+  }
+  #strata{
+    display:grid;grid-template-columns:repeat(20,1fr);gap:4px;align-items:end;
+  }
+  .layer{
+    height:26px;border-radius:5px;background:#5a4426;position:relative;overflow:hidden;
+    border:1px solid rgba(0,0,0,.4);transition:all .4s;
+  }
+  .layer.done{background:linear-gradient(180deg,#c9a227,#8a6d1f);box-shadow:0 0 8px rgba(255,215,106,.4);}
+  .layer.done::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#2a1c10;font-weight:800;font-size:13px;}
+  .layer.cur{background:linear-gradient(180deg,#ff9d3c,#b35b12);animation:curpulse 1.2s infinite;}
+  .layer.boss{background:#5a2030;border-color:#c04060;}
+  .layer.boss.done{background:linear-gradient(180deg,#c9a227,#8a6d1f);}
+  @keyframes curpulse{0%,100%{box-shadow:0 0 4px rgba(255,157,60,.4);}50%{box-shadow:0 0 16px rgba(255,157,60,.95);}}
+  #depth{font-size:calc(var(--fs) - 7px);color:#cbb98d;margin-top:6px;text-align:center;}
+  /* ---------- панели экранов ---------- */
+  .screen{flex:1;display:none;animation:fadein .5s;}
+  .screen.active{display:block;}
+  @keyframes fadein{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  .panel{
+    background:rgba(61,44,26,.92);border:2px solid var(--gold2);border-radius:18px;
+    padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.5);
+  }
+  h1.big{font-size:calc(var(--fs) + 14px);color:var(--gold);text-align:center;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,.6);}
+  .sub{font-size:var(--fs);color:#e9dcb8;text-align:center;line-height:1.5;}
+  /* ---------- старт ---------- */
+  .start-ico{font-size:64px;text-align:center;animation:bob 2.4s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  .rules{margin:16px 0;font-size:calc(var(--fs) - 3px);line-height:1.6;}
+  .rules li{margin:6px 0 6px 20px;}
+  .bigbtn{
+    display:block;width:100%;padding:16px;font-size:calc(var(--fs) + 4px);font-weight:800;
+    background:linear-gradient(180deg,#e9b53c,#b57a12);color:#2a1c10;border:none;border-radius:14px;
+    cursor:pointer;letter-spacing:1px;box-shadow:0 5px 0 #7a5410, 0 8px 20px rgba(0,0,0,.5);
+    transition:transform .12s, box-shadow .12s; margin-top:10px;
+  }
+  .bigbtn:active{transform:translateY(4px);box-shadow:0 1px 0 #7a5410;}
+  /* ---------- уровень ---------- */
+  .qtag{
+    display:inline-block;background:#6b4a1e;color:var(--gold);border-radius:20px;
+    padding:5px 16px;font-size:calc(var(--fs) - 5px);margin-bottom:12px;border:1px solid var(--gold2);
+  }
+  .tablet{
+    background:linear-gradient(180deg,#5c4a2e,#4a3a22);border:3px solid var(--gold2);border-radius:14px;
+    padding:20px 16px;text-align:center;margin:12px 0;position:relative;
+    box-shadow:inset 0 0 30px rgba(0,0,0,.5), 0 6px 18px rgba(0,0,0,.5);
+    animation:tabletIn .5s;
+  }
+  @keyframes tabletIn{from{opacity:0;transform:scale(.94);}to{opacity:1;transform:none;}}
+  .eq{
+    font-size:calc(var(--fs) + 8px);color:#fff7e0;font-family:'Cambria Math','Times New Roman',serif;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);
+  }
+  .eq sup{font-size:.62em;}
+  .qline{margin-top:10px;font-size:var(--fs);color:var(--gold);}
+  .shards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px;}
+  @media(max-width:520px){.shards{gap:10px;}}
+  .shard{
+    background:linear-gradient(135deg,#7a5f36,#5a4426);border:2px solid var(--gold2);border-radius:14px;
+    padding:18px 10px;text-align:center;font-size:calc(var(--fs) + 6px);font-weight:800;color:#fff3d6;
+    cursor:pointer;position:relative;overflow:hidden;
+    box-shadow:0 5px 0 #3d2c1a, 0 7px 16px rgba(0,0,0,.45);
+    transition:transform .15s; animation:shardIn .45s backwards;
+    min-height:64px;display:flex;align-items:center;justify-content:center;
+  }
+  .shard:nth-child(2){animation-delay:.08s;}
+  .shard:nth-child(3){animation-delay:.16s;}
+  .shard:nth-child(4){animation-delay:.24s;}
+  @keyframes shardIn{from{opacity:0;transform:translateY(24px) scale(.9);}to{opacity:1;transform:none;}}
+  .shard:active{transform:scale(.96);}
+  .shard:hover{transform:translateY(-3px);}
+  .shard.correct{background:linear-gradient(135deg,#4e9b2f,#2f6b1c);border-color:#9be06a;animation:pop .5s;}
+  @keyframes pop{0%{transform:scale(1);}40%{transform:scale(1.12);}100%{transform:scale(1);}}
+  .shard.wrong{background:linear-gradient(135deg,#8a3030,#5a1c1c);border-color:#ff7a7a;animation:crumble .6s forwards;}
+  @keyframes crumble{0%{transform:scale(1) rotate(0);}25%{transform:scale(1.06) rotate(-3deg);}50%{transform:scale(.92) rotate(4deg) translateY(6px);}100%{transform:scale(.55) rotate(30deg) translateY(30px);opacity:0;}}
+  .shard.dim{opacity:.35;pointer-events:none;}
+  /* ---------- подсказка ---------- */
+  #hintbox{
+    display:none;background:rgba(255,215,106,.12);border:1px dashed var(--gold);border-radius:12px;
+    padding:12px 16px;margin-top:14px;font-size:calc(var(--fs) - 2px);color:#ffe9a8;line-height:1.5;
+    animation:fadein .4s;
+  }
+  .btnrow{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .minibtn{
+    flex:1;min-width:120px;padding:11px;border-radius:12px;border:2px solid var(--gold2);
+    background:var(--panel2);color:var(--gold);font-size:calc(var(--fs) - 4px);font-weight:700;cursor:pointer;
+    transition:transform .12s;
+  }
+  .minibtn:active{transform:scale(.95);}
+  /* ---------- фидбек ---------- */
+  #feedback{
+    margin-top:14px;padding:14px 16px;border-radius:12px;font-size:var(--fs);display:none;line-height:1.5;
+    animation:fadein .3s;
+  }
+  #feedback.good{display:block;background:rgba(126,217,87,.14);border:1px solid var(--good);color:#d6ffc2;}
+  #feedback.bad{display:block;background:rgba(255,90,90,.14);border:1px solid var(--bad);color:#ffcaca;}
+  .flying{
+    position:fixed;font-size:30px;z-index:99;pointer-events:none;transition:all .9s cubic-bezier(.4,-0.2,.7,1);
+  }
+  .pts{
+    position:absolute;font-weight:800;font-size:20px;pointer-events:none;animation:ptsUp 1s forwards;
+  }
+  @keyframes ptsUp{0%{opacity:0;transform:translateY(8px);}25%{opacity:1;}100%{opacity:0;transform:translateY(-42px);}}
+  .shake{animation:shake .45s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-9px);}40%{transform:translateX(8px);}60%{transform:translateX(-6px);}80%{transform:translateX(4px);}}
+  /* ---------- финал ---------- */
+  .chest{font-size:96px;text-align:center;animation:chestpop .9s;}
+  @keyframes chestpop{0%{transform:scale(0) rotate(-20deg);}60%{transform:scale(1.2) rotate(4deg);}100%{transform:scale(1);}}
+  .code-box{
+    background:#241708;border:2px dashed var(--gold);border-radius:12px;padding:14px;text-align:center;
+    font-size:calc(var(--fs) + 2px);letter-spacing:2px;color:var(--gold);margin:14px 0;word-break:break-all;line-height:1.6;
+  }
+  .stars{font-size:44px;text-align:center;margin:10px 0;}
+  /* ---------- подвал ---------- */
+  footer{
+    position:fixed;bottom:0;left:0;right:0;z-index:6;text-align:center;
+    background:rgba(26,16,8,.9);border-top:1px solid var(--gold2);
+    padding:8px 10px;font-size:calc(var(--fs) - 8px);color:#d8c48f;
+  }
+  footer b{color:var(--gold);}
+  /* тремор экрана при обвале */
+  body.quake{animation:quake .6s;}
+  @keyframes quake{0%,100%{transform:translate(0,0);}15%{transform:translate(-8px,4px);}30%{transform:translate(7px,-5px);}45%{transform:translate(-6px,-4px);}60%{transform:translate(5px,5px);}80%{transform:translate(-3px,2px);}}
+</style>
+</head>
+<body>
+<div id="dust-layer"></div>
+<div id="app">
+  <div class="topbar">
+    <span class="title">🏺 Клад корней</span>
+    <span class="grow"></span>
+    <button class="iconbtn" id="btnSound" title="Звук">🔊</button>
+    <button class="iconbtn" id="btnFontM" title="Меньше шрифт">A−</button>
+    <button class="iconbtn" id="btnFontP" title="Больше шрифт">A+</button>
+    <button class="iconbtn" id="btnFS" title="Полный экран">⛶</button>
+  </div>
+
+  <!-- СТАРТ -->
+  <div class="screen active" id="scrStart">
+    <div class="panel">
+      <div class="start-ico">🏺⛏️🪙</div>
+      <h1 class="big">Клад корней</h1>
+      <p class="sub">Неполные квадратные уравнения · Алгебра 7–9</p>
+      <div class="rules">
+        <b>Ты — археолог-одиночка на раскопках древнего клада.</b><br><br>
+        ⛏️ Под каждым из <b>20 слоёв грунта</b> спрятано уравнение-стела.<br>
+        🪙 Каждое уравнение прячет <b>два осколка-корня</b>. Стела просит выбрать нужный:
+        наибольший, наименьший, их сумму или произведение.<br>
+        ✅ Верный осколок — летит в связку ключей, слой земли осыпается.<br>
+        💥 Ошибся — осколок рассыпается, а у тебя только <b>3 кирки</b>.<br>
+        🕳️ Ловушка: корень <b>x = 0</b> — «пустой осколок», его часто не замечают!<br>
+        🗿 Последние слои — древние стелы со скобками: сначала разверни их.<br>
+        🏺 В самом низу ждёт артефакт — он откроется только кодом из всех собранных осколков.
+      </div>
+      <button class="bigbtn" id="btnStart">⛏️ НАЧАТЬ РАСКОПКИ</button>
+    </div>
+  </div>
+
+  <!-- ИГРА -->
+  <div class="screen" id="scrGame">
+    <div class="stats">
+      <span class="chip">🪙 Осколки: <b id="stShards">0</b>/20</span>
+      <span class="chip">⭐ Очки: <b id="stScore">0</b></span>
+      <span class="chip" id="stPicks">⛏️⛏️⛏️</span>
+      <span class="chip">⏱ <b id="stTime">0:00</b></span>
+    </div>
+    <div id="strata-wrap">
+      <div id="strata"></div>
+      <div id="depth">⛏️ Глубина: 0 м</div>
+    </div>
+    <div class="panel" id="gamePanel">
+      <span class="qtag" id="qTag">Слой 1</span>
+      <div class="tablet">
+        <div class="eq" id="eqBox"></div>
+        <div class="qline" id="qLine"></div>
+      </div>
+      <div class="shards" id="shardBox"></div>
+      <div class="btnrow">
+        <button class="minibtn" id="btnHint">💡 Подсказка (−50)</button>
+        <button class="minibtn" id="btnRestart">🔄 Заново</button>
+      </div>
+      <div id="hintbox"></div>
+      <div id="feedback"></div>
+    </div>
+  </div>
+
+  <!-- ФИНАЛ -->
+  <div class="screen" id="scrFinal">
+    <div class="panel">
+      <div class="chest" id="finalChest">🏺</div>
+      <h1 class="big" id="finalTitle">КЛАД ОТКРЫТ!</h1>
+      <div class="stars" id="finalStars">⭐⭐⭐</div>
+      <p class="sub" id="finalText"></p>
+      <div class="code-box" id="codeBox"></div>
+      <div class="btnrow">
+        <button class="minibtn" id="btnAgain">⛏️ Новые раскопки</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>🌌 <b>Копилка учителя математики</b> · Неполные квадратные уравнения · Алгебра 7–9 🏺</footer>
+
+<script>
+/* ================== ЗАДАНИЯ ================== */
+const TASKS=[
+ {eq:"x² − 3x = 0", q:"наибольший корень", correct:3, opts:[0,-3,1], hint:"Вынеси x за скобку: x(x − 3) = 0. Каждый множитель даёт свой корень!", roots:[0,3]},
+ {eq:"x² + 5x = 0", q:"наибольший корень", correct:0, opts:[-5,5,-1], hint:"x(x + 5) = 0. Не потеряй корень x = 0 — это «пустой осколок»!", roots:[0,-5]},
+ {eq:"2x² + 7x = 0", q:"сумму корней", correct:-3.5, opts:[3.5,0,-7], hint:"2x(x + 3,5) = 0. Корни: 0 и −3,5. Сложи их.", roots:[0,-3.5]},
+ {eq:"4x² − 7x = 0", q:"сумму корней", correct:1.75, opts:[-1.75,0,7], hint:"4x(x − 1,75) = 0. Корни: 0 и 1,75. Сложи их.", roots:[0,1.75]},
+ {eq:"5x − 4x² = 0", q:"произведение корней", correct:0, opts:[1.25,-1.25,5], hint:"x(5 − 4x) = 0. Один из корней — нулевой, поэтому произведение равно 0!", roots:[0,1.25]},
+ {eq:"7x − 3x² = 0", q:"произведение корней", correct:0, opts:[2.33,-2.33,7], hint:"x(7 − 3x) = 0. Нулевой корень делает произведение нулём.", roots:[0,7/3]},
+ {eq:"4x² = 3x", q:"наибольший корень", correct:0.75, opts:[0,-0.75,3], hint:"Перенеси всё влево: 4x² − 3x = 0 → x(4x − 3) = 0. Нельзя делить на x — потеряешь корень!", roots:[0,0.75]},
+ {eq:"5x = −4x²", q:"наименьший корень", correct:-1.25, opts:[0,1.25,-5], hint:"5x + 4x² = 0 → x(5 + 4x) = 0. Корни: 0 и −1,25.", roots:[0,-1.25]},
+ {eq:"x² − 16 = 0", q:"наименьший корень", correct:-4, opts:[4,0,16], hint:"x² = 16 → x = ±4. Два осколка: +4 и −4.", roots:[-4,4]},
+ {eq:"x² − 36 = 0", q:"наименьший корень", correct:-6, opts:[6,0,36], hint:"x² = 36 → x = ±6. Выбирай наименьший!", roots:[-6,6]},
+ {eq:"3x² = 18", q:"произведение корней", correct:-6, opts:[6,36,-12], hint:"x² = 6 → x = ±√6. Произведение противоположных корней = −x² = −6.", roots:[-Math.sqrt(6),Math.sqrt(6)]},
+ {eq:"4x² = 32", q:"произведение корней", correct:-8, opts:[8,64,-16], hint:"x² = 8 → x = ±2√2. Произведение корней = −8.", roots:[-Math.sqrt(8),Math.sqrt(8)]},
+ {eq:"75 = 3x²", q:"сумму корней", correct:0, opts:[5,-5,25], hint:"x² = 25 → x = ±5. Сумма противоположных корней всегда 0!", roots:[-5,5]},
+ {eq:"−400 = −4x²", q:"сумму корней", correct:0, opts:[10,-10,100], hint:"x² = 100 → x = ±10. Сумма = 0.", roots:[-10,10]},
+ {eq:"(x − 3)² − 9 = 0", q:"наибольший корень", correct:6, opts:[0,-6,3], hint:"(x − 3)² = 9 → x − 3 = ±3 → x = 6 или x = 0.", roots:[0,6]},
+ {eq:"(x + 5)² − 25 = 0", q:"наименьший корень", correct:-10, opts:[0,10,-5], hint:"(x + 5)² = 25 → x + 5 = ±5 → x = 0 или x = −10.", roots:[-10,0]},
+ {eq:"(x−3)(x+2) + (x−1)(x+3) + 9 = 0", q:"наименьший корень", correct:-0.5, opts:[0,0.5,-3], hint:"Раскрой скобки и приведи подобные: 2x² + x = 0 → x(2x + 1) = 0.", roots:[-0.5,0]},
+ {eq:"(x+4)(x+2) + (x−2)(x+3) − 2 = 0", q:"наименьший корень", correct:-3.5, opts:[0,3.5,-7], hint:"Раскрой скобки: 2x² + 7x = 0 → x(2x + 7) = 0.", roots:[-3.5,0]},
+ {eq:"(x+4)² − 8(x−2) − 33 = 0", q:"наименьший корень", correct:-1, opts:[1,0,-4], hint:"Раскрой и приведи подобные: x² − 1 = 0 → x = ±1.", roots:[-1,1]},
+ {eq:"6(x−2) − (x+3)² + 25 = 0", q:"наименьший корень", correct:-2, opts:[2,0,-3], hint:"Раскрой: −x² + 4 = 0 → x² = 4 → x = ±2.", roots:[-2,2]},
+];
+const BOSS=[14,15,17,18,19,20]; // последние стелы — посложнее
+
+/* ================== СОСТОЯНИЕ ================== */
+let S={lvl:0,picks:3,score:0,start:0,timer:null,answered:[],sound:true,fs:0,locked:false};
+
+/* ================== ЗВУК ================== */
+let AC=null;
+function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+function tone(f,d,type,vol,when){
+  if(!S.sound) return;
+  const a=ac(),o=a.createOscillator(),g=a.createGain();
+  o.type=type||'sine'; o.frequency.value=f;
+  g.gain.setValueAtTime(vol||.2, a.currentTime+(when||0));
+  g.gain.exponentialRampToValueAtTime(.001, a.currentTime+(when||0)+d);
+  o.connect(g); g.connect(a.destination);
+  o.start(a.currentTime+(when||0)); o.stop(a.currentTime+(when||0)+d+.05);
+}
+function noise(d,vol,fl){
+  if(!S.sound) return;
+  const a=ac(),len=a.sampleRate*d,buf=a.createBuffer(1,len,a.sampleRate),data=buf.getChannelData(0);
+  for(let i=0;i<len;i++) data[i]=(Math.random()*2-1)*(1-i/len);
+  const src=a.createBufferSource(); src.buffer=buf;
+  const g=a.createGain(); g.gain.value=vol||.25;
+  if(fl){const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=fl;src.connect(f);f.connect(g);}else src.connect(g);
+  g.connect(a.destination); src.start();
+}
+const SND={
+  click(){tone(700,.07,'square',.12);},
+  dig(){noise(.35,.3,600); tone(120,.25,'triangle',.2);},
+  crumble(){noise(.5,.35,400); tone(90,.4,'sawtooth',.15);},
+  good(){tone(660,.12,'sine',.2); tone(880,.15,'sine',.2,.1); tone(1320,.2,'sine',.18,.2);},
+  bad(){tone(200,.3,'sawtooth',.18); tone(150,.35,'sawtooth',.15,.12);},
+  fanfare(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,.35,'triangle',.2,i*.13));},
+  alarm(){tone(320,.3,'square',.14); tone(260,.3,'square',.14,.25);},
+  quake(){noise(.9,.5,300); tone(70,.8,'sawtooth',.25);},
+  chest(){[392,494,587,784].forEach((f,i)=>tone(f,.5,'triangle',.2,i*.16)); noise(.6,.2,800);}
+};
+
+/* ================== ФОНОВЫЕ ЧАСТИЦЫ ================== */
+function initBg(){
+  const L=document.getElementById('dust-layer');
+  for(let i=0;i<14;i++){
+    const d=document.createElement('div');d.className='dust';
+    const s=3+Math.random()*6;
+    d.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;
+      --dx:${(Math.random()*160-80)}px;--dy:${-(60+Math.random()*120)}px;
+      animation-duration:${8+Math.random()*10}s;animation-delay:${Math.random()*10}s;`;
+    L.appendChild(d);
+  }
+  for(let i=0;i<12;i++){
+    const g=document.createElement('div');g.className='sandgrain';
+    g.style.cssText=`left:${Math.random()*100}%;animation-duration:${5+Math.random()*8}s;animation-delay:${Math.random()*9}s;
+      opacity:${.2+Math.random()*.4};`;
+    L.appendChild(g);
+  }
+}
+
+/* ================== ЭКРАНЫ ================== */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function fmt(n){
+  if(Number.isInteger(n)) return String(n);
+  let s=(+n.toFixed(3)).toString().replace('.',',');
+  return s;
+}
+
+/* ================== СТАРТ ================== */
+function startGame(){
+  S.lvl=0;S.picks=3;S.score=0;S.answered=[];S.start=Date.now();
+  buildStrata(); updateStats();
+  show('scrGame'); showLevel();
+  SND.dig();
+  S.timer=setInterval(()=>{
+    const t=Math.floor((Date.now()-S.start)/1000);
+    document.getElementById('stTime').textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+  },500);
+}
+
+/* ================== ПРОГРЕСС ================== */
+function buildStrata(){
+  const box=document.getElementById('strata'); box.innerHTML='';
+  TASKS.forEach((t,i)=>{
+    const d=document.createElement('div');
+    d.className='layer'+(BOSS.includes(i)?' boss':''); d.id='layer'+i;
+    box.appendChild(d);
+  });
+}
+function updateStrata(){
+  for(let i=0;i<TASKS.length;i++){
+    const el=document.getElementById('layer'+i);
+    el.classList.toggle('done', i<S.lvl);
+    el.classList.toggle('cur', i===S.lvl);
+  }
+  document.getElementById('depth').textContent='⛏️ Глубина: '+(S.lvl*3)+' м из 60 м';
+}
+
+/* ================== УРОВЕНЬ ================== */
+function updateStats(){
+  document.getElementById('stShards').textContent=S.answered.filter(a=>a!==null).length;
+  document.getElementById('stScore').textContent=S.score;
+  document.getElementById('stPicks').textContent='⛏️'.repeat(S.picks)+'<span>'+'·'.repeat(3-S.picks)+'</span>';
+  document.getElementById('stPicks').innerHTML='⛏️'.repeat(S.picks)+' ·'.repeat(3-S.picks);
+}
+
+function showLevel(){
+  const t=TASKS[S.lvl];
+  S.locked=false;
+  document.getElementById('qTag').textContent=
+    (BOSS.includes(S.lvl)?'🗿 Древняя стела · ':'Слой '+(S.lvl+1)+' · ')+'глубина '+(S.lvl*3)+' м';
+  document.getElementById('eqBox').innerHTML=t.eq.replace(/\^2/g,'<sup>2</sup>');
+  document.getElementById('qLine').textContent='В ответ запиши '+(t.q.includes('корней')?t.q:' '+t.q);
+  document.getElementById('hintbox').style.display='none';
+  document.getElementById('hintbox').dataset.shown='';
+  document.getElementById('btnHint').textContent='💡 Подсказка (−50)';
+  const fb=document.getElementById('feedback'); fb.style.display='none'; fb.className='';
+  const box=document.getElementById('shardBox'); box.innerHTML='';
+  const answers=[t.correct,...t.opts].sort(()=>Math.random()-.5);
+  answers.forEach(v=>{
+    const d=document.createElement('div'); d.className='shard'; d.textContent=fmt(v);
+    d.onclick=()=>pick(d,v); box.appendChild(d);
+  });
+  updateStrata(); updateStats();
+}
+
+function pick(el,v){
+  if(S.locked) return;
+  S.locked=true;
+  const t=TASKS[S.lvl];
+  const fb=document.getElementById('feedback');
+  if(Math.abs(v-t.correct)<1e-9){
+    el.classList.add('correct');
+    document.querySelectorAll('.shard').forEach(s=>{if(s!==el)s.classList.add('dim');});
+    SND.good();
+    S.score+=100; S.answered.push(v);
+    flyShard(el);
+    const gained=el.appendChild(document.createElement('span'));
+    gained.className='pts';gained.style.color='#9be06a';gained.textContent='+100';gained.style.right='8px';gained.style.top='2px';
+    fb.className='good';
+    fb.innerHTML='🪙 Осколок найден! Оба корня уравнения: <b>'+fmt(t.roots[0])+'</b> и <b>'+fmt(t.roots[1])+
+      '</b>.<br>'+(t.roots.includes(0)?'🕳️ Пустой осколок (корень 0) тоже сосчитан — молодец, что не потерял его!':'')+
+      '<br>⬇️ Слой осыпается — копаем глубже…';
+    updateStats(); updateStrata();
+    setTimeout(nextLevel,2200);
+  } else {
+    el.classList.add('wrong');
+    SND.crumble(); if(navigator.vibrate) navigator.vibrate(120);
+    S.picks--; updateStats();
+    fb.className='bad';
+    if(S.picks<=0){
+      fb.innerHTML='💥 Осколок рассыпался, кирки кончились! Небольшой обвал…';
+      quake();
+      setTimeout(()=>{ // обвал: откат и восстановление
+        S.picks=3; S.score=Math.max(0,S.score-100); updateStats();
+        fb.className='bad';
+        fb.innerHTML='🏚️ Обвал! Раскопки восстановлены (−100 очков). Эта стела снова перед тобой.';
+        SND.quake();
+        document.querySelectorAll('.shard').forEach(s=>{s.classList.remove('wrong','dim');s.style.opacity='';});
+        S.locked=false;
+      },1200);
+    } else {
+      fb.innerHTML='💥 Осколок рассыпался! Это не '+(t.q.includes('корней')?'результат с корнями':t.q)+'. Кирок осталось: '+S.picks+'.<br>Попробуй снова — корня всегда ДВА.';
+      SND.bad();
+      setTimeout(()=>{
+        document.querySelectorAll('.shard').forEach(s=>{if(!s.classList.contains('correct')){s.classList.remove('wrong','dim');s.style.opacity='';}});
+        S.locked=false;
+      },700);
+    }
+  }
+}
+
+function flyShard(el){
+  const r=el.getBoundingClientRect();
+  const fly=document.createElement('div');
+  fly.className='flying'; fly.textContent='🪙';
+  fly.style.left=(r.left+r.width/2-15)+'px'; fly.style.top=(r.top)+'px';
+  document.body.appendChild(fly);
+  const target=document.getElementById('stShards').getBoundingClientRect();
+  requestAnimationFrame(()=>{
+    fly.style.left=(target.left)+'px'; fly.style.top=(target.top)+'px';
+    fly.style.transform='scale(.4)'; fly.style.opacity='.2';
+  });
+  setTimeout(()=>fly.remove(),950);
+}
+
+function nextLevel(){
+  S.lvl++;
+  if(S.lvl>=TASKS.length){ finish(); return; }
+  showLevel();
+  if(BOSS.includes(S.lvl)){ SND.alarm(); }
+  else SND.dig();
+}
+
+/* ================== ФИНАЛ ================== */
+function finish(){
+  clearInterval(S.timer);
+  const t=Math.floor((Date.now()-S.start)/1000);
+  const mins=Math.floor(t/60), secs=t%60;
+  let stars = S.score>=1600?3 : S.score>=1000?2 : 1;
+  document.getElementById('finalStars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('finalTitle').textContent = stars===3?'КЛАД В ПОЛНОМ БЛЕСКЕ!':'КЛАД ОТКРЫТ!';
+  document.getElementById('finalChest').textContent='🏺✨';
+  document.getElementById('finalText').innerHTML=
+    'Раскопки завершены за <b>'+mins+' мин '+String(secs).padStart(2,'0')+' сек</b>.<br>'+
+    'Осколков собрано: <b>20 из 20</b> · Очки: <b>'+S.score+'</b>';
+  document.getElementById('codeBox').innerHTML='🗝️ Код артефакта (все осколки по слоям):<br><b>'+
+    S.answered.map(fmt).join(' · ')+'</b>';
+  show('scrFinal');
+  SND.chest();
+  if(stars===3) setTimeout(()=>SND.fanfare(),800);
+  confetti();
+}
+function confetti(){
+  const L=document.getElementById('dust-layer');
+  const em=['✨','🪙','🏺','⭐','💎'];
+  for(let i=0;i<26;i++){
+    const s=document.createElement('div');
+    s.className='flying'; s.textContent=em[Math.floor(Math.random()*em.length)];
+    s.style.cssText='left:'+Math.random()*95+'%;top:-40px;font-size:'+(22+Math.random()*20)+'px;transition:all '+(2.2+Math.random()*2)+'s linear;';
+    L.appendChild(s);
+    requestAnimationFrame(()=>{s.style.top='110vh';s.style.transform='rotate('+(Math.random()*720-360)+'deg)';});
+    setTimeout(()=>s.remove(),4500);
+  }
+}
+
+/* ================== ОБВАЛ (тряска) ================== */
+function quake(){
+  document.body.classList.add('quake');
+  setTimeout(()=>document.body.classList.remove('quake'),650);
+}
+
+/* ================== КНОПКИ ================== */
+document.getElementById('btnStart').onclick=()=>{SND.click();startGame();};
+document.getElementById('btnAgain').onclick=()=>{SND.click();show('scrStart');};
+document.getElementById('btnRestart').onclick=()=>{SND.click();showLevel();};
+document.getElementById('btnHint').onclick=()=>{
+  const hb=document.getElementById('hintbox');
+  if(hb.dataset.shown) return;
+  hb.dataset.shown='1';
+  hb.style.display='block';
+  hb.innerHTML='🧭 Картограф шепчет: '+TASKS[S.lvl].hint;
+  S.score=Math.max(0,S.score-50); updateStats(); SND.click();
+  document.getElementById('btnHint').textContent='💡 Подсказка использована';
+};
+document.getElementById('btnSound').onclick=function(){
+  S.sound=!S.sound; this.textContent=S.sound?'🔊':'🔇'; if(S.sound)SND.click();
+};
+document.getElementById('btnFontP').onclick=()=>{S.fs=Math.min(44,S.fs+2);document.documentElement.style.setProperty('--fs',S.fs+'px');SND.click();};
+document.getElementById('btnFontM').onclick=()=>{S.fs=Math.max(16,S.fs-2);document.documentElement.style.setProperty('--fs',S.fs+'px');SND.click();};
+document.getElementById('btnFS').onclick=()=>{
+  if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}
+  else document.exitFullscreen();
+};
+
+/* разблокировка звука по первому касанию (для телефонов) */
+document.addEventListener('touchstart',()=>{try{ac().resume();}catch(e){}},{once:true});
+document.addEventListener('click',()=>{try{ac().resume();}catch(e){}},{once:true});
+
+initBg();
+</script>
+</body>
+</html>
